@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chems IA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0B1320;
+    --bg-elev: #121D30;
+    --bg-card: #16223A;
+    --teal: #16C79A;
+    --teal-dim: #0F8F73;
+    --amber: #FFB000;
+    --text: #EAF2F5;
+    --text-dim: #7E92A6;
+    --border: #213149;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  svg { display: block; }
+
+  .screen { min-height: 100vh; display: flex; flex-direction: column; }
+  .hidden { display: none !important; }
+
+  /* ===== ATOM LOGO ===== */
+  .atom-logo { width: 56px; height: 56px; position: relative; flex-shrink: 0; }
+  .atom-logo .nucleus {
+    position: absolute; top: 50%; left: 50%; width: 11px; height: 11px;
+    background: radial-gradient(circle at 35% 35%, #fff, var(--teal) 65%);
+    border-radius: 50%; transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(22, 199, 154, 0.7); z-index: 2;
+  }
+  .atom-logo .orbit {
+    position: absolute; top: 50%; left: 50%;
+    border: 1.2px solid rgba(22, 199, 154, 0.32);
+    border-radius: 50%; transform-origin: center;
+  }
+  .atom-logo .orbit.o1 { width: 56px; height: 22px; margin: -11px 0 0 -28px; animation: spin 4.5s linear infinite; }
+  .atom-logo .orbit.o2 { width: 56px; height: 22px; margin: -11px 0 0 -28px; transform: rotate(60deg); animation: spin 5.5s linear infinite reverse; }
+  .atom-logo .orbit.o3 { width: 56px; height: 22px; margin: -11px 0 0 -28px; transform: rotate(120deg); animation: spin 6.5s linear infinite; }
+  .atom-logo .electron {
+    position: absolute; width: 4.5px; height: 4.5px; background: var(--amber);
+    border-radius: 50%; box-shadow: 0 0 5px var(--amber); top: -2.25px; left: 50%; margin-left: -2.25px;
+  }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .atom-logo .orbit { animation: none; } }
+
+  /* ===== AUTH SCREEN ===== */
+  #auth-screen {
+    justify-content: center; align-items: center; padding: 40px 26px;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(22,199,154,0.07), transparent 38%),
+      radial-gradient(circle at 85% 100%, rgba(255,176,0,0.05), transparent 38%),
+      var(--bg);
+  }
+  .auth-wrap { width: 100%; max-width: 380px; }
+  .brand-row { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+  .brand-title { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.4px; }
+  .brand-title span { color: var(--teal); }
+  .by-kappa {
+    color: var(--text-dim); font-size: 10.5px; letter-spacing: 1.8px; text-transform: uppercase;
+    margin: 14px 0 6px; font-weight: 600;
+  }
+  .brand-sub { color: var(--text-dim); font-size: 13.5px; margin-bottom: 34px; line-height: 1.5; }
+
+  .tabs { display: flex; gap: 2px; background: var(--bg-elev); border-radius: 6px; padding: 3px; margin-bottom: 26px; border: 1px solid var(--border); }
+  .tab-btn {
+    flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-dim);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13.5px; font-weight: 600; border-radius: 4px;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.2px;
+  }
+  .tab-btn.active { background: var(--teal); color: #06231C; }
+
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 7px; font-weight: 600; letter-spacing: 0.2px; }
+  .field input {
+    width: 100%; padding: 13px 14px; background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-family: inherit; font-size: 14.5px; transition: border-color 0.2s;
+  }
+  .field input::placeholder { color: #4A5C71; }
+  .field input:focus { outline: none; border-color: var(--teal); }
+  .field input:focus-visible { box-shadow: 0 0 0 3px rgba(22,199,154,0.22); }
+
+  .btn-primary {
+    width: 100%; padding: 14px; background: var(--teal); border: none; border-radius: 6px;
+    color: #06231C; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14.5px; font-weight: 700;
+    cursor: pointer; margin-top: 8px; transition: background 0.2s, transform 0.1s; letter-spacing: 0.2px;
+  }
+  .btn-primary:hover { background: #1EDDAE; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  .btn-primary:disabled { opacity: 0.55; cursor: wait; }
+
+  .auth-error {
+    background: rgba(255, 90, 90, 0.08); border: 1px solid rgba(255,90,90,0.28); color: #FF8585;
+    padding: 11px 13px; border-radius: 6px; font-size: 12.5px; margin-bottom: 16px; display: none; line-height: 1.5;
+  }
+  .auth-note { margin-top: 22px; font-size: 11.5px; color: #4A5C71; text-align: center; line-height: 1.7; }
+
+  /* ===== APP SCREEN ===== */
+  #app-screen { display: flex; flex-direction: column; height: 100vh; }
+  .app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 18px; border-bottom: 1px solid var(--border); background: var(--bg-elev); flex-shrink: 0;
+  }
+  .app-header .brand-mini { display: flex; align-items: center; gap: 9px; }
+  .app-header .brand-mini .atom-logo { width: 28px; height: 28px; }
+  .app-header .brand-mini .atom-logo .nucleus { width: 6px; height: 6px; }
+  .app-header .brand-mini .atom-logo .orbit.o1, .app-header .brand-mini .atom-logo .orbit.o2, .app-header .brand-mini .atom-logo .orbit.o3 {
+    width: 28px; height: 11px; margin: -5.5px 0 0 -14px;
+  }
+  .app-header .brand-mini span { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; }
+
+  .coin-pill {
+    display: flex; align-items: center; gap: 6px; background: rgba(255,176,0,0.1);
+    border: 1px solid rgba(255,176,0,0.26); padding: 6px 12px 6px 9px; border-radius: 6px;
+    font-size: 13px; font-weight: 700; color: var(--amber); font-family: 'JetBrains Mono', monospace;
+  }
+
+  .daily-phrase {
+    margin: 14px 18px 0; padding: 12px 14px; background: var(--bg-card); border-left: 2.5px solid var(--teal);
+    border-radius: 6px; font-size: 12px; color: var(--text-dim); line-height: 1.55; display: flex; gap: 10px;
+  }
+  .daily-phrase .ic { color: var(--teal); flex-shrink: 0; margin-top: 1px; }
+  .daily-phrase b { color: var(--text); font-weight: 600; }
+
+  .chat-area { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 85%; padding: 12px 15px; border-radius: 8px; font-size: 14px; line-height: 1.55; }
+  .msg.bot { background: var(--bg-card); align-self: flex-start; border-bottom-left-radius: 2px; }
+  .msg.user { background: var(--teal-dim); color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+  .msg.bot .tag {
+    display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--teal);
+    letter-spacing: 0.6px; margin-bottom: 5px; text-transform: uppercase; font-weight: 500;
+  }
+
+  .quick-row { display: flex; gap: 8px; padding: 0 18px 10px; overflow-x: auto; flex-shrink: 0; }
+  .quick-row::-webkit-scrollbar { display: none; }
+  .quick-chip {
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 7px 13px; border-radius: 6px; font-size: 12px; white-space: nowrap; cursor: pointer;
+    font-family: inherit; transition: border-color 0.2s, color 0.2s; font-weight: 500;
+  }
+  .quick-chip:hover { border-color: var(--teal); color: var(--text); }
+
+  .topic-chip {
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 9px 14px; border-radius: 6px; font-size: 12.5px; cursor: pointer;
+    font-family: inherit; transition: all 0.15s; font-weight: 500;
+  }
+  .topic-chip:hover { border-color: var(--teal); color: var(--text); }
+  .topic-chip.selected { background: rgba(22,199,154,0.14); border-color: var(--teal); color: var(--text); }
+  #topic-surprise { border-style: dashed; }
+
+  .input-row {
+    display: flex; gap: 10px; padding: 12px 18px 18px; border-top: 1px solid var(--border);
+    background: var(--bg-elev); flex-shrink: 0; align-items: center;
+  }
+  .input-row input {
+    flex: 1; padding: 13px 16px; background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-family: inherit; font-size: 14px;
+  }
+  .input-row input::placeholder { color: #4A5C71; }
+  .input-row input:focus { outline: none; border-color: var(--teal); }
+  .icon-btn {
+    width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-dim); display: flex; align-items: center;
+    justify-content: center; cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+  }
+  .icon-btn:hover { border-color: var(--teal); color: var(--teal); }
+  .send-btn { background: var(--teal); color: #06231C; border: none; }
+  .send-btn:hover { background: #1EDDAE; }
+
+  .bottom-nav {
+    display: flex; justify-content: space-around; padding: 9px 0 max(9px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border); background: var(--bg-elev); flex-shrink: 0;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-dim);
+    font-size: 10px; background: none; border: none; cursor: pointer; font-family: inherit;
+    padding: 4px 14px; font-weight: 500; transition: color 0.2s;
+  }
+  .nav-item.active { color: var(--teal); }
+  .nav-item:hover { color: var(--text); }
+
+  .typing-dots span {
+    display: inline-block; width: 5px; height: 5px; background: var(--teal); border-radius: 50%;
+    margin-right: 3px; animation: bounce 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ===== AUTH SCREEN ===== -->
+<div id="auth-screen" class="screen">
+  <div class="auth-wrap">
+    <div class="brand-row">
+      <div class="atom-logo">
+        <div class="orbit o1"><div class="electron"></div></div>
+        <div class="orbit o2"><div class="electron"></div></div>
+        <div class="orbit o3"><div class="electron"></div></div>
+        <div class="nucleus"></div>
+      </div>
+      <div class="brand-title">Chems<span> IA</span></div>
+    </div>
+    <div class="by-kappa">Desenvolvido pela Kappa AI</div>
+    <div class="brand-sub">"A inteligência da química nas tuas mãos."</div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Entrar</button>
+      <button class="tab-btn" id="tab-signup" onclick="switchTab('signup')">Criar conta</button>
+    </div>
+
+    <div class="auth-error" id="auth-error"></div>
+
+    <form id="login-form" onsubmit="return handleLogin(event)">
+      <div class="field">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="teu@email.com" required>
+      </div>
+      <div class="field">
+        <label for="login-pass">Palavra-passe</label>
+        <input type="password" id="login-pass" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-primary" id="login-btn">Entrar</button>
+    </form>
+
+    <form id="signup-form" class="hidden" onsubmit="return handleSignup(event)">
+      <div class="field">
+        <label for="signup-name">Nome</label>
+        <input type="text" id="signup-name" placeholder="O teu nome" required>
+      </div>
+      <div class="field">
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" placeholder="teu@email.com" required>
+      </div>
+      <div class="field">
+        <label for="signup-pass">Palavra-passe</label>
+        <input type="password" id="signup-pass" placeholder="Mínimo 6 caracteres" minlength="6" required>
+      </div>
+      <div class="field">
+        <label for="signup-pass2">Confirmar palavra-passe</label>
+        <input type="password" id="signup-pass2" placeholder="Repete a palavra-passe" minlength="6" required>
+      </div>
+      <button type="submit" class="btn-primary" id="signup-btn">Criar conta</button>
+    </form>
+
+    <div class="auth-note">Demo ligada à base de dados real do Supabase.<br>O chat de química nesta demo usa respostas de exemplo.</div>
+  </div>
+</div>
+
+<!-- ===== APP SCREEN ===== -->
+<div id="app-screen" class="screen hidden">
+  <div class="app-header">
+    <div class="brand-mini">
+      <div class="atom-logo">
+        <div class="orbit o1"><div class="electron"></div></div>
+        <div class="orbit o2"><div class="electron"></div></div>
+        <div class="orbit o3"><div class="electron"></div></div>
+        <div class="nucleus"></div>
+      </div>
+      <span>Chems IA</span>
+    </div>
+    <div class="coin-pill">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h3.5a1.5 1.5 0 010 3h-2a1.5 1.5 0 000 3h3.5"/></svg>
+      <span id="coin-count">240</span>
+    </div>
+  </div>
+
+  <div class="daily-phrase">
+    <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top:2px"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+    <span><b>Frase do dia —</b> "Um átomo de hidrogénio tem apenas um eletrão, mas é a chave para entender todo o universo."</span>
+  </div>
+
+  <div class="quick-row">
+    <button class="quick-chip" onclick="sendQuick('Explica ligações iónicas')">Ligações iónicas</button>
+    <button class="quick-chip" onclick="sendQuick('O que é a tabela periódica?')">Tabela periódica</button>
+    <button class="quick-chip" onclick="sendQuick('Como balancear equações?')">Balancear equações</button>
+    <button class="quick-chip" onclick="sendQuick('Explica pH e pOH')">pH e pOH</button>
+  </div>
+
+  <div class="chat-area" id="chat-area">
+    <div class="msg bot">
+      <span class="tag">Chems IA</span>
+      Olá! Sou a tua assistente de Química. Podes perguntar-me qualquer coisa sobre a matéria, ou enviar uma foto de um exercício. Em que posso ajudar hoje?
+    </div>
+  </div>
+
+  <div class="input-row">
+    <button class="icon-btn" id="photo-btn" title="Enviar foto de exercício" aria-label="Enviar foto">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8a2 2 0 012-2h2l1.5-2h5L16 6h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/><circle cx="12" cy="13" r="3.5"/></svg>
+    </button>
+    <input type="text" id="msg-input" placeholder="Pergunta algo sobre química..." onkeypress="if(event.key==='Enter') sendMessage()">
+    <button class="icon-btn send-btn" id="send-btn" onclick="sendMessage()" title="Enviar" aria-label="Enviar mensagem">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>
+    </button>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-chat" onclick="switchScreen('chat')" aria-label="Chat">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 20l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      Chat
+    </button>
+    <button class="nav-item" id="nav-quiz" onclick="switchScreen('quiz')" aria-label="Quizzes">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 014.7 1.2c0 1.6-2.2 2-2.2 3.6"/><circle cx="12" cy="16.2" r="0.4" fill="currentColor"/></svg>
+      Quizzes
+    </button>
+    <button class="nav-item" id="nav-ranking" onclick="switchScreen('ranking')" aria-label="Ranking">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM7 6H4.5A1.5 1.5 0 003 7.5 3.5 3.5 0 006 11M17 6h2.5A1.5 1.5 0 0121 7.5 3.5 3.5 0 0118 11"/></svg>
+      Ranking
+    </button>
+    <button class="nav-item" id="nav-amigos" onclick="switchScreen('amigos')" aria-label="Amigos">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16 13.7c2.6.4 4.5 2.2 4.5 4.8"/></svg>
+      Amigos
+    </button>
+    <button class="nav-item" id="nav-perfil" onclick="switchScreen('perfil')" aria-label="Perfil">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg>
+      Perfil
+    </button>
+  </div>
+</div>
+
+<!-- ===== QUIZ SCREEN ===== -->
+<div id="quiz-home" class="screen hidden">
+  <div class="app-header">
+    <div class="brand-mini">
+      <button onclick="switchScreen('chat')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;padding:4px;" aria-label="Voltar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span>Quizzes</span>
+    </div>
+    <div class="coin-pill">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h3.5a1.5 1.5 0 010 3h-2a1.5 1.5 0 000 3h3.5"/></svg>
+      <span id="coin-count-2">240</span>
+    </div>
+  </div>
+
+  <div style="padding:18px; flex:1; overflow-y:auto;">
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-size:12px; color:var(--text-dim); margin-bottom:2px;">Quizzes hoje</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:600;" id="quiz-count-today">3 / 15</div>
+      </div>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 014.7 1.2c0 1.6-2.2 2-2.2 3.6"/><circle cx="12" cy="16.2" r="0.4" fill="var(--teal)"/></svg>
+    </div>
+
+    <label style="display:block; font-size:12.5px; color:var(--text-dim); margin-bottom:8px; font-weight:600;">Sobre que assunto queres ser testado?</label>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;" id="quiz-topic-chips">
+      <button class="topic-chip" onclick="selectTopic('Ligações Químicas', this)">Ligações Químicas</button>
+      <button class="topic-chip" onclick="selectTopic('Tabela Periódica', this)">Tabela Periódica</button>
+      <button class="topic-chip" onclick="selectTopic('Ácidos e Bases', this)">Ácidos e Bases</button>
+      <button class="topic-chip" onclick="selectTopic('Estequiometria', this)">Estequiometria</button>
+      <button class="topic-chip" onclick="selectTopic('Reacções Químicas', this)">Reacções Químicas</button>
+      <button class="topic-chip" onclick="selectTopic('Estrutura Atómica', this)">Estrutura Atómica</button>
+      <button class="topic-chip" onclick="selectTopic('Soluções e Misturas', this)">Soluções e Misturas</button>
+      <button class="topic-chip" onclick="selectTopic('Química Orgânica', this)">Química Orgânica</button>
+      <button class="topic-chip" onclick="selectTopic('', this)" id="topic-surprise">Surpreende-me</button>
+    </div>
+
+    <label style="display:block; font-size:11.5px; color:#4A5C71; margin-bottom:8px;">Ou escreve o teu próprio tema:</label>
+    <input type="text" id="quiz-topic" placeholder="Ex: revisão para a prova de sexta..." style="width:100%; padding:13px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:inherit; font-size:14.5px; margin-bottom:14px;" oninput="clearTopicSelection()">
+
+    <div id="quiz-topic-selected" class="hidden" style="background:rgba(22,199,154,0.1); border:1px solid rgba(22,199,154,0.3); border-radius:6px; padding:10px 13px; margin-bottom:14px; font-size:13px; color:var(--teal);"></div>
+
+    <button class="btn-primary" style="margin-top:0;" onclick="startQuiz()">Começar quiz (10 perguntas)</button>
+
+    <div style="margin-top:22px; font-size:11.5px; color:#4A5C71; text-align:center; line-height:1.7;">
+      Cada quiz concluído dá 25 KappaCoins e 50 pontos de Ranking.
+    </div>
+  </div>
+</div>
+
+<!-- ===== QUIZ PLAY SCREEN ===== -->
+<div id="quiz-play" class="screen hidden">
+  <div class="app-header">
+    <div class="brand-mini">
+      <button onclick="exitQuiz()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;padding:4px;" aria-label="Sair do quiz">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <span id="quiz-progress-label">Pergunta 1 / 10</span>
+    </div>
+  </div>
+
+  <div style="padding: 4px 18px 0;">
+    <div style="height:5px; background:var(--bg-card); border-radius:3px; overflow:hidden;">
+      <div id="quiz-progress-bar" style="height:100%; width:10%; background:var(--teal); border-radius:3px; transition:width 0.3s;"></div>
+    </div>
+  </div>
+
+  <div style="padding:24px 20px; flex:1; overflow-y:auto;">
+    <div id="quiz-question-text" style="font-size:18px; font-weight:600; line-height:1.4; margin-bottom:22px; font-family:'Space Grotesk',sans-serif;">
+      Carregando pergunta...
+    </div>
+    <div id="quiz-options" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <div id="quiz-feedback" class="hidden" style="margin-top:16px; padding:13px 15px; border-radius:8px; font-size:13.5px; line-height:1.55;"></div>
+  </div>
+
+  <div style="padding:14px 18px 18px; border-top:1px solid var(--border); background:var(--bg-elev);">
+    <button class="btn-primary hidden" id="quiz-next-btn" onclick="nextQuestion()">Próxima pergunta</button>
+  </div>
+</div>
+
+<!-- ===== QUIZ RESULT SCREEN ===== -->
+<div id="quiz-result" class="screen hidden">
+  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; text-align:center;">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.6" style="margin-bottom:18px;"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM7 6H4.5A1.5 1.5 0 003 7.5 3.5 3.5 0 006 11M17 6h2.5A1.5 1.5 0 0121 7.5 3.5 3.5 0 0118 11"/></svg>
+    <div style="font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; margin-bottom:6px;">Quiz concluído</div>
+    <div id="quiz-result-score" style="font-size:15px; color:var(--text-dim); margin-bottom:26px;">Acertaste 7 de 10 perguntas</div>
+
+    <div style="display:flex; gap:14px; margin-bottom:30px;">
+      <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px 22px; text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; color:var(--amber);">+25</div>
+        <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">KappaCoins</div>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px 22px; text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; color:var(--teal);">+50</div>
+        <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">Pontos Ranking</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" style="max-width:280px;" onclick="switchScreen('quiz')">Fazer outro quiz</button>
+    <button onclick="switchScreen('chat')" style="margin-top:12px; background:none; border:none; color:var(--text-dim); font-family:inherit; font-size:13.5px; cursor:pointer;">Voltar ao chat</button>
+  </div>
+</div>
+
+<!-- ===== AMIGOS SCREEN ===== -->
+<div id="amigos-screen" class="screen hidden">
+  <div class="app-header">
+    <div class="brand-mini">
+      <button onclick="switchScreen('chat')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;padding:4px;" aria-label="Voltar ao chat">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span>Amigos</span>
+    </div>
+  </div>
+
+  <div style="padding:18px; flex:1; overflow-y:auto;">
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:16px;">
+      <div style="font-size:12.5px; color:var(--text-dim); margin-bottom:10px;">O teu código de convite</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div id="invite-code" style="flex:1; font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:600; letter-spacing:1px; background:var(--bg-elev); border:1px solid var(--border); border-radius:6px; padding:11px 14px;">CHEM-A93K2</div>
+        <button class="icon-btn" onclick="copyInviteCode()" id="copy-invite-btn" aria-label="Copiar código">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15V5a1.5 1.5 0 011.5-1.5H15"/></svg>
+        </button>
+      </div>
+      <div style="font-size:11.5px; color:#4A5C71; margin-top:10px; line-height:1.5;">Partilha este código no WhatsApp. Quando o teu amigo completar o primeiro quiz, ganhas 50 KappaCoins.</div>
+    </div>
+
+    <div style="margin-top:22px; margin-bottom:12px; font-size:13px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px;">Os teus amigos (3)</div>
+
+    <div id="friends-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+  </div>
+</div>
+
+<!-- ===== RANKING SCREEN ===== -->
+<div id="ranking-screen" class="screen hidden">
+  <div class="app-header">
+    <div class="brand-mini">
+      <button onclick="switchScreen('chat')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;padding:4px;" aria-label="Voltar ao chat">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span>Ranking</span>
+    </div>
+  </div>
+
+  <div class="tabs" style="margin:14px 18px 0;">
+    <button class="tab-btn active" id="rank-tab-geral" onclick="switchRankingTab('geral')">Geral</button>
+    <button class="tab-btn" id="rank-tab-mensal" onclick="switchRankingTab('mensal')">Mensal</button>
+    <button class="tab-btn" id="rank-tab-cidades" onclick="switchRankingTab('cidades')">Cidades</button>
+  </div>
+
+  <div id="ranking-subtitle" style="margin:12px 18px 0; font-size:11.5px; color:#4A5C71;">Pontuação acumulada desde sempre — o teu hall da fama.</div>
+
+  <div style="padding:14px 18px 18px; flex:1; overflow-y:auto;">
+    <div id="ranking-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+  </div>
+</div>
+
+<!-- ===== PERFIL SCREEN ===== -->
+<div id="perfil-screen" class="screen hidden">
+  <div class="app-header">
+    <div class="brand-mini">
+      <button onclick="switchScreen('chat')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;padding:4px;" aria-label="Voltar ao chat">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span>Perfil</span>
+    </div>
+  </div>
+
+  <div style="padding:18px; flex:1; overflow-y:auto;">
+    <div style="display:flex; flex-direction:column; align-items:center; padding:14px 0 24px;">
+      <div style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg, var(--teal-dim), var(--teal)); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:#06231C; margin-bottom:12px;" id="profile-avatar">A</div>
+      <div id="profile-name-display" style="font-size:18px; font-weight:700; font-family:'Space Grotesk',sans-serif;">Aluno Chems IA</div>
+      <div style="font-size:12.5px; color:var(--text-dim); margin-top:3px;" id="profile-meta-display">9ª classe · Maputo</div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-bottom:24px;">
+      <div style="flex:1; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:13px; text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:700; color:var(--amber);" id="profile-coins">240</div>
+        <div style="font-size:10.5px; color:var(--text-dim); margin-top:2px;">KappaCoins</div>
+      </div>
+      <div style="flex:1; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:13px; text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:700; color:var(--teal);" id="profile-rank-points">0</div>
+        <div style="font-size:10.5px; color:var(--text-dim); margin-top:2px;">Pontos Ranking</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="profile-name">Nome</label>
+      <input type="text" id="profile-name" placeholder="O teu nome">
+    </div>
+    <div class="field">
+      <label for="profile-grade">Classe / Ano escolar</label>
+      <input type="text" id="profile-grade" placeholder="Ex: 9ª classe">
+    </div>
+    <div class="field">
+      <label for="profile-city">Cidade</label>
+      <input type="text" id="profile-city" placeholder="Ex: Maputo">
+    </div>
+
+    <button class="btn-primary" onclick="saveProfile()" id="save-profile-btn">Guardar alterações</button>
+
+    <button onclick="handleLogout()" style="width:100%; margin-top:24px; padding:13px; background:transparent; border:1px solid rgba(255,90,90,0.3); border-radius:6px; color:#FF8585; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer;">Sair da conta</button>
+  </div>
+</div>
+
+<script>
+  // ===== SUPABASE SETUP (REAL, via fetch direto à API — sem biblioteca externa) =====
+  const SUPABASE_URL = 'https://nkgaiojiexrtlskdtzmh.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Ay0NerWsV6K6toS1qjpI-w_1mjSm2_Z';
+
+  function getStoredSession() {
+    try { return JSON.parse(localStorage.getItem('chems_session') || 'null'); }
+    catch { return null; }
+  }
+  function setStoredSession(session) {
+    try { localStorage.setItem('chems_session', JSON.stringify(session)); } catch {}
+  }
+  function clearStoredSession() {
+    try { localStorage.removeItem('chems_session'); } catch {}
+  }
+
+  async function supabaseAuth(endpoint, body) {
+    console.log('[Chems IA] Chamando Supabase:', endpoint, body);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+    let res;
+    try {
+      res = await fetch(`${SUPABASE_URL}/auth/v1/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+    } catch (networkErr) {
+      console.error('[Chems IA] Erro de rede:', networkErr);
+      if (networkErr.name === 'AbortError') {
+        throw new Error('O servidor demorou demasiado a responder. Verifica a tua ligação à internet e tenta novamente.');
+      }
+      throw new Error('Não foi possível ligar ao servidor. Verifica a tua ligação à internet.');
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    let data;
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      console.error('[Chems IA] Resposta não é JSON válido:', parseErr);
+      throw new Error('O servidor respondeu de forma inesperada. Tenta novamente.');
+    }
+
+    console.log('[Chems IA] Resposta:', res.status, data);
+
+    if (!res.ok) {
+      throw new Error(data.error_description || data.msg || data.error || `Erro ${res.status}`);
+    }
+    return data;
+  }
+
+  function switchTab(tab) {
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+    document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('signup-form').classList.toggle('hidden', tab !== 'signup');
+    hideError();
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('auth-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function hideError() {
+    document.getElementById('auth-error').style.display = 'none';
+  }
+
+  async function handleSignup(e) {
+    e.preventDefault();
+    hideError();
+    const name = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    const pass = document.getElementById('signup-pass').value;
+    const pass2 = document.getElementById('signup-pass2').value;
+    const btn = document.getElementById('signup-btn');
+
+    if (pass !== pass2) {
+      showError('As palavras-passe não coincidem.');
+      return false;
+    }
+
+    btn.disabled = true; btn.textContent = 'A criar conta...';
+
+    try {
+      const data = await supabaseAuth('signup', {
+        email: email,
+        password: pass,
+        data: { full_name: name }
+      });
+
+      if (data.access_token) {
+        setStoredSession(data);
+        showAppScreen();
+      } else if (data.id && !data.access_token) {
+        // Conta criada, mas o Supabase exige confirmação por email antes de libertar sessão
+        showError('Conta criada. Este projecto Supabase exige confirmação por email — verifica a tua caixa de entrada (e spam), confirma, depois usa "Entrar".');
+      } else {
+        showError('Resposta inesperada do servidor. Tenta novamente em alguns segundos.');
+      }
+    } catch (err) {
+      showError(traduzErro(err.message));
+    } finally {
+      btn.disabled = false; btn.textContent = 'Criar conta';
+    }
+    return false;
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    hideError();
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-pass').value;
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = 'A entrar...';
+
+    try {
+      const data = await supabaseAuth('token?grant_type=password', {
+        email: email,
+        password: pass
+      });
+      setStoredSession(data);
+      showAppScreen();
+    } catch (err) {
+      showError(traduzErro(err.message));
+    } finally {
+      btn.disabled = false; btn.textContent = 'Entrar';
+    }
+    return false;
+  }
+
+  function traduzErro(msg) {
+    if (!msg) return 'Algo correu mal. Tenta novamente.';
+    if (msg.includes('Invalid login credentials')) return 'Email ou palavra-passe incorrectos.';
+    if (msg.includes('already registered') || msg.includes('already exists')) return 'Este email já está registado. Tenta entrar.';
+    if (msg.includes('Password should be') || msg.includes('at least 6')) return 'A palavra-passe precisa de pelo menos 6 caracteres.';
+    if (msg.includes('Unable to validate email')) return 'Esse formato de email não é válido.';
+    return msg;
+  }
+
+  function handleLogout() {
+    clearStoredSession();
+    document.getElementById('app-screen').classList.add('hidden');
+    document.getElementById('quiz-home').classList.add('hidden');
+    document.getElementById('quiz-play').classList.add('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('amigos-screen').classList.add('hidden');
+    document.getElementById('perfil-screen').classList.add('hidden');
+    document.getElementById('ranking-screen').classList.add('hidden');
+    document.getElementById('auth-screen').classList.remove('hidden');
+  }
+
+  function showAppScreen() {
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('app-screen').classList.remove('hidden');
+  }
+
+  // ===== CHAT (DEMO — respostas simuladas, sem chave exposta) =====
+  const demoRespostas = {
+    'ligações iónicas': 'Uma ligação iónica forma-se quando um átomo perde eletrões e outro ganha — geralmente entre um metal e um não-metal. O resultado são iões com cargas opostas que se atraem, como no NaCl (sal de cozinha): o sódio perde 1 eletrão (fica Na⁺) e o cloro ganha-o (fica Cl⁻).',
+    'tabela periódica': 'A tabela periódica organiza os elementos por número atómico crescente, agrupando-os em colunas (grupos) com propriedades químicas semelhantes. As linhas chamam-se períodos. Os metais ficam à esquerda, os não-metais à direita, e os gases nobres na última coluna.',
+    'balancear equações': 'Para balancear uma equação química: 1) conta os átomos de cada elemento nos reagentes e produtos; 2) ajusta os coeficientes (números antes das fórmulas) até o número de átomos ser igual nos dois lados; 3) nunca alteres os índices dentro das fórmulas, só os coeficientes.',
+    'ph e poh': 'O pH mede o quão ácida ou básica é uma solução, numa escala de 0 a 14. pH < 7 é ácido, pH = 7 é neutro, pH > 7 é básico. O pOH é o complemento: pH + pOH = 14. Quanto menor o pH, maior a concentração de iões H⁺.'
+  };
+
+  function sendQuick(text) {
+    document.getElementById('msg-input').value = text;
+    sendMessage();
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('msg-input');
+    const text = input.value.trim();
+    if (!text) return;
+    addMessage(text, 'user');
+    input.value = '';
+    showTyping();
+
+    setTimeout(() => {
+      removeTyping();
+      const key = Object.keys(demoRespostas).find(k => text.toLowerCase().includes(k));
+      const resposta = key
+        ? demoRespostas[key]
+        : 'Boa pergunta. Nesta demo as respostas são simuladas — quando ligado ao backend real, a IA Gemini responderá com precisão a qualquer pergunta de química. Tenta um dos botões de sugestão acima para ver um exemplo completo.';
+      addMessage(resposta, 'bot');
+    }, 900);
+  }
+
+  function addMessage(text, who) {
+    const area = document.getElementById('chat-area');
+    const div = document.createElement('div');
+    div.className = 'msg ' + who;
+    if (who === 'bot') {
+      div.innerHTML = '<span class="tag">Chems IA</span>' + text;
+    } else {
+      div.textContent = text;
+    }
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function showTyping() {
+    const area = document.getElementById('chat-area');
+    const div = document.createElement('div');
+    div.className = 'msg bot';
+    div.id = 'typing-indicator';
+    div.innerHTML = '<span class="tag">Chems IA</span><div class="typing-dots"><span></span><span></span><span></span></div>';
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+  }
+  function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  document.getElementById('photo-btn').addEventListener('click', () => {
+    addMessage('O envio de foto será activado quando o backend de análise de imagem estiver ligado.', 'bot');
+  });
+
+  // ===== NAVEGAÇÃO ENTRE TELAS =====
+  function switchScreen(screen) {
+    document.getElementById('app-screen').classList.add('hidden');
+    document.getElementById('quiz-home').classList.add('hidden');
+    document.getElementById('quiz-play').classList.add('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('amigos-screen').classList.add('hidden');
+    document.getElementById('perfil-screen').classList.add('hidden');
+    document.getElementById('ranking-screen').classList.add('hidden');
+
+    document.getElementById('nav-chat')?.classList.remove('active');
+    document.getElementById('nav-quiz')?.classList.remove('active');
+    document.getElementById('nav-amigos')?.classList.remove('active');
+    document.getElementById('nav-perfil')?.classList.remove('active');
+    document.getElementById('nav-ranking')?.classList.remove('active');
+
+    if (screen === 'chat') {
+      document.getElementById('app-screen').classList.remove('hidden');
+      document.getElementById('nav-chat').classList.add('active');
+    } else if (screen === 'quiz') {
+      document.getElementById('quiz-home').classList.remove('hidden');
+      document.getElementById('quiz-home').style.display = 'flex';
+      document.getElementById('nav-quiz').classList.add('active');
+    } else if (screen === 'quiz-play') {
+      document.getElementById('quiz-play').classList.remove('hidden');
+      document.getElementById('quiz-play').style.display = 'flex';
+    } else if (screen === 'quiz-result') {
+      document.getElementById('quiz-result').classList.remove('hidden');
+      document.getElementById('quiz-result').style.display = 'flex';
+    } else if (screen === 'amigos') {
+      document.getElementById('amigos-screen').classList.remove('hidden');
+      document.getElementById('amigos-screen').style.display = 'flex';
+      document.getElementById('nav-amigos').classList.add('active');
+      renderFriendsList();
+    } else if (screen === 'perfil') {
+      document.getElementById('perfil-screen').classList.remove('hidden');
+      document.getElementById('perfil-screen').style.display = 'flex';
+      document.getElementById('nav-perfil').classList.add('active');
+      loadProfileIntoForm();
+    } else if (screen === 'ranking') {
+      document.getElementById('ranking-screen').classList.remove('hidden');
+      document.getElementById('ranking-screen').style.display = 'flex';
+      document.getElementById('nav-ranking').classList.add('active');
+      renderRanking();
+    }
+  }
+
+  // ===== BANCO DE PERGUNTAS (DEMO) =====
+  // Em produção, estas perguntas seriam geradas pela IA Gemini com base no tema escolhido
+  const bancoPerguntas = [
+    { q: 'Qual é o símbolo químico do sódio?', opts: ['So', 'Na', 'Sd', 'S'], correct: 1, exp: 'O símbolo do sódio vem do latim "natrium" — por isso é Na, não So.' },
+    { q: 'Quantos eletrões tem um átomo neutro de oxigénio?', opts: ['6', '7', '8', '9'], correct: 2, exp: 'O oxigénio tem número atómico 8, ou seja, 8 protões e, num átomo neutro, também 8 eletrões.' },
+    { q: 'Que tipo de ligação ocorre entre um metal e um não-metal?', opts: ['Covalente', 'Iónica', 'Metálica', 'Van der Waals'], correct: 1, exp: 'Metais perdem eletrões e não-metais ganham, formando iões que se atraem — ligação iónica.' },
+    { q: 'Qual o pH de uma solução neutra?', opts: ['0', '7', '14', '10'], correct: 1, exp: 'Na escala de pH (0-14), o valor 7 representa neutralidade — nem ácido nem básico.' },
+    { q: 'Qual destes é um gás nobre?', opts: ['Cloro', 'Hélio', 'Sódio', 'Oxigénio'], correct: 1, exp: 'O Hélio (He) está no Grupo 18 da tabela periódica — gases nobres, muito estáveis e pouco reactivos.' },
+    { q: 'O que representa o número 2 em H₂O?', opts: ['2 moléculas de água', '2 átomos de hidrogénio', '2 átomos de oxigénio', '2 ligações duplas'], correct: 1, exp: 'O índice 2 depois do H indica que há 2 átomos de hidrogénio em cada molécula de água.' },
+    { q: 'Qual destas é uma reacção exotérmica?', opts: ['Absorve calor do ambiente', 'Liberta calor para o ambiente', 'Não envolve energia', 'Só ocorre a baixas temperaturas'], correct: 1, exp: 'Reacções exotérmicas libertam energia (calor) para o ambiente — o oposto das endotérmicas.' },
+    { q: 'Qual é a fórmula química do dióxido de carbono?', opts: ['CO', 'CO₂', 'C₂O', 'C₂O₂'], correct: 1, exp: 'O dióxido de carbono tem 1 átomo de carbono e 2 de oxigénio: CO₂.' },
+    { q: 'O que é um catalisador?', opts: ['Substância que acelera uma reacção sem ser consumida', 'Substância que impede reacções', 'Um tipo de ácido forte', 'Um instrumento de laboratório'], correct: 0, exp: 'Um catalisador aumenta a velocidade da reacção, mas não é consumido no processo — pode ser reutilizado.' },
+    { q: 'Quantos protões tem o átomo de hidrogénio?', opts: ['0', '1', '2', '3'], correct: 1, exp: 'O hidrogénio é o elemento mais simples: número atómico 1, ou seja, apenas 1 protão.' }
+  ];
+
+  let quizState = { perguntas: [], indice: 0, acertos: 0, respondida: false };
+
+  let temaSelecionado = null;
+
+  function selectTopic(tema, elBtn) {
+    temaSelecionado = tema;
+    document.getElementById('quiz-topic').value = '';
+    document.querySelectorAll('.topic-chip').forEach(c => c.classList.remove('selected'));
+    elBtn.classList.add('selected');
+
+    const label = document.getElementById('quiz-topic-selected');
+    if (tema) {
+      label.textContent = `Tema escolhido: ${tema}`;
+      label.classList.remove('hidden');
+    } else {
+      label.textContent = 'A IA vai escolher um tema surpresa para ti.';
+      label.classList.remove('hidden');
+    }
+  }
+
+  function clearTopicSelection() {
+    temaSelecionado = null;
+    document.querySelectorAll('.topic-chip').forEach(c => c.classList.remove('selected'));
+    document.getElementById('quiz-topic-selected').classList.add('hidden');
+  }
+
+  function startQuiz() {
+    const temaEscrito = document.getElementById('quiz-topic').value.trim();
+    const temaFinal = temaEscrito || temaSelecionado || null;
+    // Embaralha e selecciona 10 perguntas do banco (demo cíclico se o banco for menor)
+    // Em produção, temaFinal seria enviado à IA Gemini para gerar perguntas específicas sobre esse assunto
+    const embaralhadas = [...bancoPerguntas].sort(() => Math.random() - 0.5);
+    quizState = { perguntas: embaralhadas.slice(0, 10), indice: 0, acertos: 0, respondida: false, tema: temaFinal };
+    switchScreen('quiz-play');
+    renderQuestion();
+  }
+
+  function exitQuiz() {
+    if (confirm('Sair agora vai perder o progresso deste quiz. Continuar?')) {
+      switchScreen('quiz');
+    }
+  }
+
+  function renderQuestion() {
+    const p = quizState.perguntas[quizState.indice];
+    quizState.respondida = false;
+
+    document.getElementById('quiz-progress-label').textContent = `Pergunta ${quizState.indice + 1} / ${quizState.perguntas.length}`;
+    document.getElementById('quiz-progress-bar').style.width = `${((quizState.indice + 1) / quizState.perguntas.length) * 100}%`;
+    document.getElementById('quiz-question-text').textContent = p.q;
+
+    const optsContainer = document.getElementById('quiz-options');
+    optsContainer.innerHTML = '';
+    p.opts.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = opt;
+      btn.className = 'quiz-opt-btn';
+      btn.style.cssText = 'text-align:left; padding:14px 16px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:inherit; font-size:14.5px; cursor:pointer; transition:all 0.15s;';
+      btn.onclick = () => answerQuestion(i, btn);
+      optsContainer.appendChild(btn);
+    });
+
+    document.getElementById('quiz-feedback').classList.add('hidden');
+    document.getElementById('quiz-next-btn').classList.add('hidden');
+  }
+
+  function answerQuestion(escolhida, btnEl) {
+    if (quizState.respondida) return;
+    quizState.respondida = true;
+    const p = quizState.perguntas[quizState.indice];
+    const acertou = escolhida === p.correct;
+    if (acertou) quizState.acertos++;
+
+    const allBtns = document.querySelectorAll('.quiz-opt-btn');
+    allBtns.forEach((b, i) => {
+      b.style.cursor = 'default';
+      if (i === p.correct) {
+        b.style.borderColor = 'var(--teal)';
+        b.style.background = 'rgba(22,199,154,0.12)';
+      } else if (i === escolhida) {
+        b.style.borderColor = '#FF8585';
+        b.style.background = 'rgba(255,90,90,0.1)';
+      }
+    });
+
+    const fb = document.getElementById('quiz-feedback');
+    fb.classList.remove('hidden');
+    fb.style.background = acertou ? 'rgba(22,199,154,0.1)' : 'rgba(255,90,90,0.08)';
+    fb.style.border = acertou ? '1px solid rgba(22,199,154,0.3)' : '1px solid rgba(255,90,90,0.28)';
+    fb.innerHTML = `<strong style="color:${acertou ? 'var(--teal)' : '#FF8585'}">${acertou ? 'Correcto!' : 'Não foi esta.'}</strong><br>${p.exp}`;
+
+    document.getElementById('quiz-next-btn').classList.remove('hidden');
+    document.getElementById('quiz-next-btn').textContent = (quizState.indice + 1 < quizState.perguntas.length) ? 'Próxima pergunta' : 'Ver resultado';
+  }
+
+  function nextQuestion() {
+    quizState.indice++;
+    if (quizState.indice < quizState.perguntas.length) {
+      renderQuestion();
+    } else {
+      showQuizResult();
+    }
+  }
+
+  let meusPontosRanking = 0;
+
+  function showQuizResult() {
+    switchScreen('quiz-result');
+    document.getElementById('quiz-result-score').textContent = `Acertaste ${quizState.acertos} de ${quizState.perguntas.length} perguntas`;
+    const coinCount = document.getElementById('coin-count');
+    const coinCount2 = document.getElementById('coin-count-2');
+    const novoSaldo = parseInt(coinCount.textContent) + 25;
+    coinCount.textContent = novoSaldo;
+    if (coinCount2) coinCount2.textContent = novoSaldo;
+
+    meusPontosRanking += 50;
+    rankingDemo.geral.lista.find(i => i.eu).pontos = meusPontosRanking;
+    rankingDemo.mensal.lista.find(i => i.eu).pontos = meusPontosRanking;
+    const profileRankEl = document.getElementById('profile-rank-points');
+    if (profileRankEl) profileRankEl.textContent = meusPontosRanking;
+  }
+
+  // Inicializa estilo dos botões de quiz dinamicamente (hover)
+  const quizStyleTag = document.createElement('style');
+  quizStyleTag.textContent = `.quiz-opt-btn:hover { border-color: var(--teal) !important; }`;
+  document.head.appendChild(quizStyleTag);
+
+  // ===== AMIGOS (DEMO) =====
+  const amigosDemo = [
+    { nome: 'Helena M.', coins: 410, pontos: 1280 },
+    { nome: 'Custódio S.', coins: 190, pontos: 860 },
+    { nome: 'Benilde F.', coins: 95, pontos: 420 }
+  ];
+
+  function renderFriendsList() {
+    const list = document.getElementById('friends-list');
+    list.innerHTML = '';
+    amigosDemo.forEach(amigo => {
+      const row = document.createElement('div');
+      row.style.cssText = 'background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:13px 15px; display:flex; align-items:center; justify-content:space-between;';
+      row.innerHTML = `
+        <div style="display:flex; align-items:center; gap:11px;">
+          <div style="width:36px; height:36px; border-radius:50%; background:var(--bg-elev); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; color:var(--teal);">${amigo.nome.charAt(0)}</div>
+          <div style="font-size:14px; font-weight:600;">${amigo.nome}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--teal);">${amigo.pontos} pts</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--amber);">${amigo.coins} coins</div>
+        </div>`;
+      list.appendChild(row);
+    });
+  }
+
+  function copyInviteCode() {
+    const code = document.getElementById('invite-code').textContent;
+    const btn = document.getElementById('copy-invite-btn');
+    const fallbackCopy = () => {
+      const ta = document.createElement('textarea');
+      ta.value = code;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch {}
+      document.body.removeChild(ta);
+    };
+
+    const showCopied = () => {
+      const original = btn.innerHTML;
+      btn.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>';
+      setTimeout(() => { btn.innerHTML = original; }, 1500);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(showCopied).catch(() => { fallbackCopy(); showCopied(); });
+    } else {
+      fallbackCopy();
+      showCopied();
+    }
+  }
+
+  // ===== PERFIL =====
+  function getStoredProfile() {
+    try { return JSON.parse(localStorage.getItem('chems_profile') || 'null'); }
+    catch { return null; }
+  }
+  function setStoredProfile(profile) {
+    try { localStorage.setItem('chems_profile', JSON.stringify(profile)); } catch {}
+  }
+
+  function loadProfileIntoForm() {
+    const profile = getStoredProfile() || { nome: 'Aluno Chems IA', classe: '', cidade: '' };
+    document.getElementById('profile-name').value = profile.nome || '';
+    document.getElementById('profile-grade').value = profile.classe || '';
+    document.getElementById('profile-city').value = profile.cidade || '';
+    updateProfileDisplay(profile);
+  }
+
+  function updateProfileDisplay(profile) {
+    const nome = profile.nome || 'Aluno Chems IA';
+    document.getElementById('profile-avatar').textContent = nome.charAt(0).toUpperCase();
+    document.getElementById('profile-name-display').textContent = nome;
+    const metaParts = [profile.classe, profile.cidade].filter(Boolean);
+    document.getElementById('profile-meta-display').textContent = metaParts.length ? metaParts.join(' · ') : 'Completa o teu perfil';
+    document.getElementById('profile-coins').textContent = document.getElementById('coin-count').textContent;
+  }
+
+  function saveProfile() {
+    const profile = {
+      nome: document.getElementById('profile-name').value.trim(),
+      classe: document.getElementById('profile-grade').value.trim(),
+      cidade: document.getElementById('profile-city').value.trim()
+    };
+    setStoredProfile(profile);
+    updateProfileDisplay(profile);
+
+    const btn = document.getElementById('save-profile-btn');
+    const original = btn.textContent;
+    btn.textContent = 'Guardado!';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  }
+
+  // ===== RANKING (DEMO) =====
+  const rankingDemo = {
+    geral: {
+      subtitulo: 'Pontuação acumulada desde sempre — o teu hall da fama.',
+      lista: [
+        { nome: 'Helena M.', pontos: 8420, cidade: 'Maputo' },
+        { nome: 'Edson C.', pontos: 7110, cidade: 'Beira' },
+        { nome: 'Custódio S.', pontos: 6890, cidade: 'Maputo' },
+        { nome: 'Tu', pontos: 0, cidade: '', eu: true },
+        { nome: 'Benilde F.', pontos: 3420, cidade: 'Nampula' },
+        { nome: 'Joaquim P.', pontos: 2980, cidade: 'Maputo' }
+      ]
+    },
+    mensal: {
+      subtitulo: 'Reinicia todo mês. Top 10 ganham KappaCoins — confere a Secção 7 da especificação.',
+      lista: [
+        { nome: 'Custódio S.', pontos: 1340, cidade: 'Maputo' },
+        { nome: 'Helena M.', pontos: 1210, cidade: 'Maputo' },
+        { nome: 'Tu', pontos: 0, cidade: '', eu: true },
+        { nome: 'Edson C.', pontos: 890, cidade: 'Beira' },
+        { nome: 'Benilde F.', pontos: 640, cidade: 'Nampula' }
+      ]
+    },
+    cidades: {
+      subtitulo: 'Soma da pontuação mensal de todos os alunos de cada cidade.',
+      lista: [
+        { nome: 'Maputo', pontos: 24300, cidadeRank: true },
+        { nome: 'Beira', pontos: 11200, cidadeRank: true },
+        { nome: 'Nampula', pontos: 8950, cidadeRank: true },
+        { nome: 'Tete', pontos: 5100, cidadeRank: true },
+        { nome: 'Quelimane', pontos: 3700, cidadeRank: true }
+      ]
+    }
+  };
+
+  let rankingTabAtiva = 'geral';
+
+  function switchRankingTab(tab) {
+    rankingTabAtiva = tab;
+    document.getElementById('rank-tab-geral').classList.toggle('active', tab === 'geral');
+    document.getElementById('rank-tab-mensal').classList.toggle('active', tab === 'mensal');
+    document.getElementById('rank-tab-cidades').classList.toggle('active', tab === 'cidades');
+    renderRanking();
+  }
+
+  function renderRanking() {
+    const dados = rankingDemo[rankingTabAtiva];
+    document.getElementById('ranking-subtitle').textContent = dados.subtitulo;
+
+    const ordenada = [...dados.lista].sort((a, b) => b.pontos - a.pontos);
+    const list = document.getElementById('ranking-list');
+    list.innerHTML = '';
+
+    ordenada.forEach((item, i) => {
+      const posicao = i + 1;
+      const ehTop3 = posicao <= 3;
+      const corMedalha = posicao === 1 ? '#FFD700' : posicao === 2 ? '#C0C0C0' : posicao === 3 ? '#CD7F32' : null;
+
+      const row = document.createElement('div');
+      row.style.cssText = `display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-radius:8px; background:${item.eu ? 'rgba(22,199,154,0.1)' : 'var(--bg-card)'}; border:1px solid ${item.eu ? 'rgba(22,199,154,0.35)' : 'var(--border)'};`;
+
+      const numeroHtml = corMedalha
+        ? `<div style="width:26px; height:26px; border-radius:50%; background:${corMedalha}22; border:1.5px solid ${corMedalha}; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:${corMedalha};">${posicao}</div>`
+        : `<div style="width:26px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text-dim);">${posicao}</div>`;
+
+      const nomeLabel = item.cidadeRank
+        ? item.nome
+        : (item.eu ? 'Tu' : item.nome);
+
+      row.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px;">
+          ${numeroHtml}
+          <div>
+            <div style="font-size:14px; font-weight:${item.eu ? '700' : '600'};">${nomeLabel}</div>
+            ${item.cidade ? `<div style="font-size:11px; color:var(--text-dim);">${item.cidade}</div>` : ''}
+          </div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:13.5px; font-weight:600; color:${item.eu ? 'var(--teal)' : 'var(--text)'};">${item.pontos.toLocaleString('pt-PT')} pts</div>`;
+
+      list.appendChild(row);
+    });
+  }
+
+  // Verifica se já há sessão activa
+  if (getStoredSession()) showAppScreen();
+</script>
+</body>
+</html>
